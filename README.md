@@ -125,8 +125,7 @@ This project already includes the required deployment setup:
 - `npm run dev` script for development
 - `process.env.PORT` support for Render
 - `process.env.MONGO_URL` support for MongoDB Atlas
-- `.env.example` file for environment variable reference
-- `render.yaml` file with Render web service settings
+- `.env` support for local development
 
 ## Deployment Steps For Render
 

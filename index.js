@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -8,12 +10,6 @@ const Chat = require("./models/chat");
 const app = express();
 const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/whatsapp";
 const PORT = process.env.PORT || 8080;
-const isRender = process.env.RENDER === "true";
-
-if (isRender && !process.env.MONGO_URL) {
-  console.error("MONGO_URL is missing. Add it in Render > Environment.");
-  process.exit(1);
-}
 
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -38,9 +34,6 @@ main()
   .then(() => console.log("connection successful"))
   .catch((err) => {
     console.error("MongoDB connection failed:", err.message);
-    if (isRender) {
-      process.exit(1);
-    }
   });
 
 // ROUTES
