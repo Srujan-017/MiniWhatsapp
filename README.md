@@ -126,6 +126,7 @@ This project already includes the required deployment setup:
 - `process.env.PORT` support for Render
 - `process.env.MONGO_URL` support for MongoDB Atlas
 - `.env.example` file for environment variable reference
+- `render.yaml` file with Render web service settings
 
 ## Deployment Steps For Render
 
@@ -240,6 +241,8 @@ MONGO_URL=your_mongodb_atlas_connection_string
 ```
 
 Render automatically provides the `PORT` variable, so you do not need to add it manually.
+
+Paste the MongoDB URL only in Render's environment variable field. Do not paste the real password into GitHub, README, or project source files.
 
 ### 8. Deploy
 

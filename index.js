@@ -83,7 +83,7 @@ app.delete("/chats/:id", async (req, res) => {
 
 // ROOT
 app.get("/", (req, res) => {
-  res.send("root is working");
+  res.redirect("/chats");
 });
 
 app.listen(PORT, () => {
