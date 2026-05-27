@@ -6,6 +6,8 @@ const methodOverride = require("method-override");
 const Chat = require("./models/chat");
 
 const app = express();
+const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/whatsapp";
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -18,7 +20,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // DB Connection
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/whatsapp");
+  await mongoose.connect(MONGO_URL);
 }
 main()
   .then(() => console.log("connection successful"))
@@ -84,6 +86,6 @@ app.get("/", (req, res) => {
   res.send("root is working");
 });
 
-app.listen(8080, () => {
-  console.log("server is listening on port 8080");
+app.listen(PORT, () => {
+  console.log(`server is listening on port ${PORT}`);
 });
