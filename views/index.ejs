@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Whatsapp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<main class="app-shell">
+  <section class="sidebar">
+    <div class="brand-mark">MW</div>
+    <div>
+      <p class="eyebrow">Mini Whatsapp</p>
+      <h1>Chat Room</h1>
+    </div>
+
+    <div class="sidebar-card">
+      <span class="status-dot"></span>
+      <div>
+        <strong><%= chats.length %></strong>
+        <span>active conversations</span>
+      </div>
+    </div>
+
+    <form method="GET" action="/chats/new" class="sidebar-action">
+      <button class="primary-btn">+ New Chat</button>
+    </form>
+  </section>
+
+  <section class="content-panel">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Inbox</p>
+        <h2>All Chats</h2>
+      </div>
+      <span class="live-pill">Live</span>
+    </header>
+
+    <% if(chats.length === 0) { %>
+      <div class="empty-state">
+        <h3>No chats yet</h3>
+        <p>Start a conversation and it will appear here.</p>
+        <form method="GET" action="/chats/new">
+          <button class="primary-btn">Create first chat</button>
+        </form>
+      </div>
+    <% } %>
+
+    <div class="chat-grid">
+      <% for(let chat of chats) { %>
+        <article class="chat-card">
+          <div class="chat-card-header">
+            <div class="avatar"><%= chat.from.charAt(0).toUpperCase() %></div>
+            <div>
+              <p class="chat-route"><%= chat.from %> to <%= chat.to %></p>
+              <p class="chat-date"><%= chat.created_at.toString().split(" ").slice(0,4).join(" ") %></p>
+            </div>
+          </div>
+
+          <p class="message-text"><%= chat.msg %></p>
+
+          <div class="chat-actions">
+            <form method="GET" action="/chats/<%= chat._id %>/edit">
+              <button class="ghost-btn">Edit</button>
+            </form>
+
+            <form method="POST" action="/chats/<%= chat._id %>?_method=DELETE">
+              <button class="danger-btn">Delete</button>
+            </form>
+          </div>
+        </article>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

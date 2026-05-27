@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<main class="form-page">
+  <section class="form-hero">
+    <a href="/chats" class="back-link">Back to chats</a>
+    <p class="eyebrow">Update</p>
+    <h1>Edit Chat</h1>
+    <p class="support-text">This chat was sent from <strong><%= chat.from %></strong> to <strong><%= chat.to %></strong>.</p>
+  </section>
+
+  <section class="form-panel">
+    <form method="POST" action="/chats/<%= chat._id %>?_method=PUT" class="chat-form">
+      <label>
+        <span>Message</span>
+        <textarea name="msg"><%= chat.msg %></textarea>
+      </label>
+
+      <button class="primary-btn">Update Message</button>
+    </form>
+  </section>
+</main>
+
+</body>
+</html>

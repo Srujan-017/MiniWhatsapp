@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>New Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<main class="form-page">
+  <section class="form-hero">
+    <a href="/chats" class="back-link">Back to chats</a>
+    <p class="eyebrow">Compose</p>
+    <h1>Create New Chat</h1>
+    <p class="support-text">Send a short message between two people and keep the conversation tidy.</p>
+  </section>
+
+  <section class="form-panel">
+    <form method="POST" action="/chats" class="chat-form">
+      <label>
+        <span>Sender</span>
+        <input name="from" placeholder="who are you" />
+      </label>
+
+      <label>
+        <span>Message</span>
+        <textarea name="msg" placeholder="write message"></textarea>
+      </label>
+
+      <label>
+        <span>Receiver</span>
+        <input name="to" placeholder="receiver" />
+      </label>
+
+      <button class="primary-btn">Create Chat</button>
+    </form>
+  </section>
+</main>
+
+</body>
+</html>
