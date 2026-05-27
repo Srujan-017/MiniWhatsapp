@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -13,6 +13,13 @@ const PORT = process.env.PORT || 8080;
 
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+const mongoStates = {
+  0: "disconnected",
+  1: "connected",
+  2: "connecting",
+  3: "disconnecting"
 };
 
 // Middleware
@@ -37,6 +44,16 @@ main()
   });
 
 // ROUTES
+
+// HEALTH CHECK
+app.get("/health", (req, res) => {
+  res.json({
+    app: "MiniWhatsapp",
+    mongoUrlConfigured: Boolean(process.env.MONGO_URL),
+    mongoState: mongoStates[mongoose.connection.readyState],
+    nodeVersion: process.version
+  });
+});
 
 // INDEX
 app.get("/chats", asyncHandler(async (req, res) => {
