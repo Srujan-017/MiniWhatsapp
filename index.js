@@ -8,7 +8,8 @@ const methodOverride = require("method-override");
 const Chat = require("./models/chat");
 
 const app = express();
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/whatsapp";
+const DEFAULT_MONGO_URL = "mongodb+srv://miniwhatsapp_user:miniwhatsapp@cluster0.otgsx4n.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URL = process.env.MONGO_URL || DEFAULT_MONGO_URL;
 const PORT = process.env.PORT || 8080;
 
 const asyncHandler = (fn) => (req, res, next) => {
@@ -49,7 +50,7 @@ main()
 app.get("/health", (req, res) => {
   res.json({
     app: "MiniWhatsapp",
-    mongoUrlConfigured: Boolean(process.env.MONGO_URL),
+    mongoUrlConfigured: Boolean(MONGO_URL),
     mongoState: mongoStates[mongoose.connection.readyState],
     nodeVersion: process.version
   });
@@ -115,7 +116,7 @@ app.get("/", (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error("Request failed:", err.message);
-  res.status(500).send("Database connection error. Check MONGO_URL in Render Environment Variables.");
+  res.status(500).send("Database connection error. Check MongoDB username, password, and Atlas network access.");
 });
 
 app.listen(PORT, () => {
