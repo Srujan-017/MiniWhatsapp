@@ -1,4 +1,4 @@
-require("dotenv").config({ quiet: true });
+require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -9,34 +9,10 @@ const Chat = require("./models/chat");
 
 const app = express();
 
-// ─── Config ────────────────────────────────────────────────────────────────────
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/whatsapp";
 const PORT = process.env.PORT || 8080;
 
-if (!MONGO_URL) {
-  console.error(
-    "FATAL: MONGO_URL environment variable is not set.\n" +
-    "Copy .env.example to .env and fill in your MongoDB connection string."
-  );
-  process.exit(1);
-}
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-const asyncHandler = (fn) => (req, res, next) =>
-  Promise.resolve(fn(req, res, next)).catch(next);
-
-const mongoStates = {
-  0: "disconnected",
-  1: "connected",
-  2: "connecting",
-  3: "disconnecting",
-};
-
-// Sanitise a plain string — strip leading/trailing whitespace
-const sanitise = (str) =>
-  typeof str === "string" ? str.trim() : "";
-
-// ─── Middleware ────────────────────────────────────────────────────────────────
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 
@@ -45,48 +21,26 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Basic security headers (no extra dependency needed)
-app.use((req, res, next) => {
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  next();
-});
-
-// ─── Database ──────────────────────────────────────────────────────────────────
-async function connectDB() {
-  await mongoose.connect(MONGO_URL, {
-    serverSelectionTimeoutMS: 10000,
-  });
+// DB Connection
+async function main() {
+  await mongoose.connect(MONGO_URL);
 }
+main()
+  .then(() => console.log("connection successful"))
+  .catch((err) => console.log(err));
 
-connectDB()
-  .then(() => console.log("MongoDB connection successful"))
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err.message);
-    // Keep the process alive — Render / Atlas transient errors should not crash
-  });
-
-// ─── Routes ────────────────────────────────────────────────────────────────────
-
-// HEALTH CHECK
-app.get("/health", (req, res) => {
-  res.json({
-    app: "MiniWhatsapp",
-    mongoState: mongoStates[mongoose.connection.readyState],
-    nodeVersion: process.version,
-    uptime: process.uptime(),
-  });
-});
+// ROUTES
 
 // INDEX
-app.get(
-  "/chats",
-  asyncHandler(async (req, res) => {
-    const chats = await Chat.find().sort({ created_at: -1 });
+app.get("/chats", async (req, res) => {
+  try {
+    let chats = await Chat.find();
     res.render("index.ejs", { chats });
-  })
-);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.");
+  }
+});
 
 // NEW FORM
 app.get("/chats/new", (req, res) => {
@@ -94,91 +48,74 @@ app.get("/chats/new", (req, res) => {
 });
 
 // CREATE
-app.post(
-  "/chats",
-  asyncHandler(async (req, res) => {
-    const from = sanitise(req.body.from);
-    const to   = sanitise(req.body.to);
-    const msg  = sanitise(req.body.msg);
+app.post("/chats", async (req, res) => {
+  try {
+    let { from, to, msg } = req.body;
 
-    // Server-side validation (mirrors Mongoose schema constraints)
-    if (!from || !to || !msg) {
-      return res.status(400).send("All fields (sender, receiver, message) are required.");
-    }
-    if (msg.length > 50) {
-      return res.status(400).send("Message must be 50 characters or fewer.");
-    }
+    let newChat = new Chat({
+      from,
+      to,
+      msg,
+      created_at: new Date()
+    });
 
-    const newChat = new Chat({ from, to, msg, created_at: new Date() });
     await newChat.save();
     res.redirect("/chats");
-  })
-);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.");
+  }
+});
 
 // EDIT FORM
-app.get(
-  "/chats/:id/edit",
-  asyncHandler(async (req, res) => {
-    const chat = await Chat.findById(req.params.id);
+app.get("/chats/:id/edit", async (req, res) => {
+  try {
+    let { id } = req.params;
+    let chat = await Chat.findById(id);
+
     if (!chat) return res.status(404).send("Chat not found.");
+
     res.render("edit.ejs", { chat });
-  })
-);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.");
+  }
+});
 
 // UPDATE
-app.put(
-  "/chats/:id",
-  asyncHandler(async (req, res) => {
-    const msg = sanitise(req.body.msg);
+app.put("/chats/:id", async (req, res) => {
+  try {
+    let { id } = req.params;
+    let { msg } = req.body;
 
-    if (!msg) {
-      return res.status(400).send("Message cannot be empty.");
-    }
-    if (msg.length > 50) {
-      return res.status(400).send("Message must be 50 characters or fewer.");
-    }
+    await Chat.findByIdAndUpdate(id, { msg }, { runValidators: true });
 
-    const chat = await Chat.findByIdAndUpdate(
-      req.params.id,
-      { msg },
-      { runValidators: true, new: true }
-    );
-    if (!chat) return res.status(404).send("Chat not found.");
     res.redirect("/chats");
-  })
-);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.");
+  }
+});
 
 // DELETE
-app.delete(
-  "/chats/:id",
-  asyncHandler(async (req, res) => {
-    const chat = await Chat.findByIdAndDelete(req.params.id);
-    if (!chat) return res.status(404).send("Chat not found.");
+app.delete("/chats/:id", async (req, res) => {
+  try {
+    let { id } = req.params;
+
+    await Chat.findByIdAndDelete(id);
+
     res.redirect("/chats");
-  })
-);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.");
+  }
+});
 
 // ROOT
-app.get("/", (req, res) => res.redirect("/chats"));
-
-// 404
-app.use((req, res) => {
-  res.status(404).send("Page not found.");
+app.get("/", (req, res) => {
+  res.redirect("/chats");
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err.message);
-  // Never leak stack traces to the browser in production
-  const isDev = process.env.NODE_ENV !== "production";
-  res.status(500).send(
-    isDev
-      ? `Server error: ${err.message}`
-      : "Something went wrong. Please try again later."
-  );
-});
-
-// ─── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+  console.log(`server is listening on port ${PORT}`);
 });
