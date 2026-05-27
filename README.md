@@ -4,7 +4,7 @@ MiniWhatsapp is a clean, lightweight chat-message CRUD application built with No
 
 ## 🔴 Live Demo
 
-> **[https://miniwhatsapp-7v6z.onrender.com/chats](https://miniwhatsapp-7v6z.onrender.com/chats)**
+> **[https://miniwhatsapp-1ue3.onrender.com/chats](https://miniwhatsapp-1ue3.onrender.com/chats)**
 
 Deployed on **Render** · Backed by **MongoDB Atlas** · Always on
 
